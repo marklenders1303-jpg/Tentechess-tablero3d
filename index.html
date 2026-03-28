@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Tablero 3D</title>
+    <style>
+        body { margin: 0; overflow: hidden; background-color: #222; }
+        canvas { display: block; }
+        #info { position: absolute; top: 10px; width: 100%; text-align: center; color: white; font-family: Arial; }
+    </style>
+</head>
+<body>
+    <div id="info">Arrastra el ratón para rotar la cámara</div>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+
+    <script>
+        // 1. Configurar Escena, Cámara y Motor de Render
+        const escena = new THREE.Scene();
+        const camara = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camara.position.set(0, 10, 15);
+
+        const renderizador = new THREE.WebGLRenderer({ antialias: true });
+        renderizador.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderizador.domElement);
+
+        // 2. Controles para mover la cámara con el ratón
+        const controles = new THREE.OrbitControls(camara, renderizador.domElement);
+
+        // 3. Crear el Tablero (8x8)
+        const tamanoCasilla = 1;
+        for (let fila = 0; fila < 8; fila++) {
+            for (let col = 0; col < 8; col++) {
+                // Alternar colores (blanco/negro)
+                const esBlanca = (fila + col) % 2 === 0;
+                const colorCasilla = esBlanca ? 0xeeeeee : 0x444444;
+
+                const geometria = new THREE.BoxGeometry(tamanoCasilla, 0.2, tamanoCasilla);
+                const material = new THREE.MeshStandardMaterial({ color: colorCasilla });
+                const casilla = new THREE.Mesh(geometria, material);
+
+                // Posicionar las casillas en cuadrícula (centradas)
+                casilla.position.set(col - 3.5, 0, fila - 3.5);
+                escena.add(casilla);
+            }
+        }
+
+        // 4. Añadir luces
+        const luz = new THREE.PointLight(0xffffff, 1, 100);
+        luz.position.set(5, 10, 5);
+        escena.add(luz);
+        escena.add(new THREE.AmbientLight(0x404040)); // Luz suave global
+
+        // 5. Bucle de animación
+        function animar() {
+            requestAnimationFrame(animar);
+            controles.update();
+            renderizador.render(escena, camara);
+        }
+        
+        animar();
+    </script>
+</body>
+</html>
